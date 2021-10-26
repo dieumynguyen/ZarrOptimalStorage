@@ -17,6 +17,7 @@ def create_bash_script(params):
     with open(BASH_FILE, "w") as outfile:
         outfile.write(f'#!/usr/bin/env bash \n')
         # outfile.write(f'#SBATCH -p hpc-demand \n') 
+        outfile.write(f'#SBATCH --exclusive \n') 
         outfile.write(f'#SBATCH --output=logs-slurm/job_%j_{strategy}.out \n') 
         outfile.write(f'#SBATCH --error=logs-slurm/job_%j_{strategy}.err \n') 
         outfile.write(f'set -e \n') 
@@ -34,7 +35,7 @@ def main():
     # Note: 999 = all
     time = [1]
     lat = [10]
-    lon = [50]
+    lon = [10]
     param_sets = list(itertools.product(time,lon,lat))
 
     param_list = []
@@ -46,13 +47,12 @@ def main():
             # global_one_timestep
             # hybrid
             # single_time_smaller_spatial_chunks
-            'strat_description': 'single_time_smaller_spatial_chunks',
-            'input_path': 'eis-dh-fire/geos-fp-global/inst.zarr',  
-            # 'input_path': 'eis-dh-fire/imerg-fwi.zarr', 
+            'strat_description': 'test',
+            'input_path': 'eis-dh-fire/geos-fp-global/inst.zarr',  # 'eis-dh-fire/imerg-fwi.zarr'
             'timechunk': p[0],
             'xchunk': p[1],
             'ychunk': p[2],
-            'data_variable': 'BCEXTTAU'  # None
+            'data_variable': 'BCEXTTAU' 
         }
         param_list.append(p_dict)
 

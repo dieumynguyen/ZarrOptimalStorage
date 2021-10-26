@@ -27,7 +27,7 @@ def setup_args():
 
 def setup_output_path(path, strategy, base_name, dataset_name, folder_name, output_type):
     if path is None:
-        path = Path(f'/backup/dieumynguyen/{dataset_name}/{folder_name}/{strategy}') / base_name
+        path = Path(f'/efs/dieumynguyen/{dataset_name}/{folder_name}/{strategy}') / base_name
         if path.is_dir():
             print('Cleaning up old dir.')
             shutil.rmtree(str(path))  # Clean up
@@ -142,15 +142,15 @@ def main(args):
     with ProgressBar():
         rechunked.execute()
 
+    print("Consolidating metadata...")
+    zarr.consolidate_metadata(str(output_path))
+
     print("Copying results to S3")
     s3.put(str(output_path), f"s3://{s3_target}", recursive=True)
 
-    print("Consolidating metadata...")
-    zarr.consolidate_metadata(s3.get_mapper(s3_target))
-
-    print("Removing data from /backup/")
-    shutil.rmtree(str(output_path))
-    shutil.rmtree(str(tmp_path))
+    # print("Removing data from /backup/")
+    # shutil.rmtree(str(output_path))
+    # shutil.rmtree(str(tmp_path))
 
     print("Done!")
 
