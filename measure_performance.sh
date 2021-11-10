@@ -9,5 +9,5 @@ module load miniconda3-4.9.2-gcc-11.1.0-i4wwucj
 eval "$(conda shell.bash hook)" 
 conda activate /backup/dieumynguyen/.conda/envs/eisfire 
 echo "Using Python: $(which python)" 
-python measure_performance_trials.py
+python measure_performance.py
 echo "*** End time: $(date) *** " 
