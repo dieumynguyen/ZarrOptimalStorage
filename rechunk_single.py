@@ -35,21 +35,38 @@ def setup_output_path(path, strategy, base_name, dataset_name, folder_name, outp
     return path
 
 def create_dirs(args):
-    if args.timechunk == 'all':
-        strategy = f'{args.strat_description}_time{args.timechunk}_lat{args.ychunk:03d}_lon{args.xchunk:03d}'
-    elif args.xchunk == 'all' and args.ychunk == 'all':
-        strategy = f'{args.strat_description}_time{args.timechunk:03d}_lat{args.ychunk}_lon{args.xchunk}'
-    elif args.xchunk == 'all':  # x = lon
-        strategy = f'{args.strat_description}_time{args.timechunk:03d}_lat{args.ychunk:03d}_lon{args.xchunk}'
-    elif args.ychunk == 'all':  # y = lat
-        strategy = f'{args.strat_description}_time{args.timechunk:03d}_lat{args.ychunk}_lon{args.xchunk:03d}'
+    # if args.timechunk == 'all' and args.xchunk == 'all' and args.ychunk == 'all':
+    #     strategy = f'{args.strat_description}_time{args.timechunk}_lat{args.ychunk}_lon{args.xchunk}'
+    # elif args.timechunk == 'all' and args.xchunk != 'all' and args.ychunk != 'all':
+    #     strategy = f'{args.strat_description}_time{args.timechunk}_lat{args.ychunk:03d}_lon{args.xchunk:03d}'
+    # elif args.timechunk != 'all' and args.xchunk == 'all' and args.ychunk == 'all':
+    #     strategy = f'{args.strat_description}_time{args.timechunk:03d}_lat{args.ychunk}_lon{args.xchunk}'
+    # elif args.timechunk != 'all' and args.xchunk == 'all' and args.ychunk != 'all':  # x = lon
+    #     strategy = f'{args.strat_description}_time{args.timechunk:03d}_lat{args.ychunk:03d}_lon{args.xchunk}'
+    # elif args.timechunk != 'all' and args.xchunk != 'all' and args.ychunk == 'all':  # y = lat
+    #     strategy = f'{args.strat_description}_time{args.timechunk:03d}_lat{args.ychunk}_lon{args.xchunk:03d}'
+    # else:
+    #     strategy = f'{args.strat_description}_time{args.timechunk:03d}_lat{args.ychunk:03d}_lon{args.xchunk:03d}'
+
+    if args.timechunk == 'all' and args.xchunk == 'all' and args.ychunk == 'all':
+        strategy = f'time{args.timechunk}_lat{args.ychunk}_lon{args.xchunk}'
+    elif args.timechunk == 'all' and args.xchunk != 'all' and args.ychunk != 'all':
+        strategy = f'time{args.timechunk}_lat{args.ychunk:04d}_lon{args.xchunk:04d}'
+    elif args.timechunk != 'all' and args.xchunk == 'all' and args.ychunk == 'all':
+        strategy = f'time{args.timechunk:04d}_lat{args.ychunk}_lon{args.xchunk}'
+    elif args.timechunk != 'all' and args.xchunk == 'all' and args.ychunk != 'all':  # x = lon
+        strategy = f'time{args.timechunk:04d}_lat{args.ychunk:04d}_lon{args.xchunk}'
+    elif args.timechunk != 'all' and args.xchunk != 'all' and args.ychunk == 'all':  # y = lat
+        strategy = f'time{args.timechunk:04d}_lat{args.ychunk}_lon{args.xchunk:04d}'
     else:
-        strategy = f'{args.strat_description}_time{args.timechunk:03d}_lat{args.ychunk:03d}_lon{args.xchunk:03d}'
+        strategy = f'time{args.timechunk:04d}_lat{args.ychunk:04d}_lon{args.xchunk:04d}'
 
     # Get base dir name
     base_name = Path(args.input_path).name   # Truncate to only file part
-    dataset_name = f"{args.input_path.split('/')[1]}__{base_name.split('.')[0]}"
-    # dataset_name = f"{base_name.split('.')[0]}"
+    if args.input_path == 'eis-dh-fire/imerg-fwi.zarr':
+        dataset_name = f"{base_name.split('.')[0]}"
+    else:
+        dataset_name = f"{args.input_path.split('/')[1]}_{base_name.split('.')[0]}"
 
     # Output path
     output_path = args.output_path
@@ -95,7 +112,7 @@ def main(args):
     input_data = xr.open_zarr(input_s3, consolidated=True).unify_chunks()  # Return dataset: multi-dimensional, in memory, array database
 
     # Select only a variable if applicable 
-    if args.data_variable is not None: 
+    if args.data_variable != 'None': 
         print(f'Selecting variable: {args.data_variable}')
         input_data = input_data[[args.data_variable]]
 
@@ -145,10 +162,10 @@ def main(args):
     print("Consolidating metadata...")
     zarr.consolidate_metadata(str(output_path))
 
-    print("Copying results to S3")
-    s3.put(str(output_path), f"s3://{s3_target}", recursive=True)
+    # print("Copying results to S3")
+    # s3.put(str(output_path), f"s3://{s3_target}", recursive=True)
 
-    # print("Removing data from /backup/")
+    # print("Removing data from /efs/")
     # shutil.rmtree(str(output_path))
     # shutil.rmtree(str(tmp_path))
 
