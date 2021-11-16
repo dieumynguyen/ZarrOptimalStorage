@@ -80,7 +80,7 @@ def measure_wasted_mem_3(select_data, data_series):
 
 def measure_strategy(data_path, dataset, variable, task='time', 
                     date=None, lat=None, lon=None, method=None,
-                    num_trials=3):
+                    num_trials=3, avg_aggregate=False):
     # Process file name
     if dataset == 'imerg-fwi':
         strategy_str = data_path.split('/')[-2] 
@@ -108,8 +108,16 @@ def measure_strategy(data_path, dataset, variable, task='time',
     
     if task == 'time':
         data_series = select_data.sel(lat=lat, lon=lon, method=method)
+        if avg_aggregate: 
+            # Take avg over the spatial dimensions, 
+            # e.g. producing array with shape (5136,) instead of (5136, 17, 14)	
+            data_series = data_series.mean(dim=['lat', 'lon'])
     elif task == 'map':
         data_series = select_data.sel(time=date)
+        if avg_aggregate:
+            # Take avg over the time dimension, 
+            # e.g. producing array with shape (721, 1152) instead of (6, 721, 1152)
+            data_series = data_series.mean(dim=['time'])
     elif task == 'map_one_timestep':
         data_series = select_data.sel(time=date).isel(time=0)
     
@@ -164,7 +172,7 @@ def measure_strategy(data_path, dataset, variable, task='time',
           f'peak mem: {peak_memory:0.2f} MiB, num chunks: {num_chunk}, ' \
           f'chunk size: {chunk_size:0.2f} B, wasted mem 1: {wasted_mem_1} B, ' \
           f'wasted mem 2: {wasted_mem_2} B, wasted mem 3: {wasted_mem_3} B, ' \
-          f'array shape: {array_shape} \n')
+          f'array shape: {array_shape}')
 
     return metrics_list
 
@@ -190,12 +198,15 @@ def create_batches(all_strategies: List[str], n_workers: int = 1) -> Tuple[List[
     return batched_strategies
 
 def worker_fxn(i, strategies, dataset, variable, metrics, 
-               task, date, lat, lon, method, num_trials):
+               task, date, lat, lon, method, num_trials, 
+               avg_aggregate):
     for data_path in strategies:   
         try:
             metrics_list = measure_strategy(data_path, dataset, variable, 
                                             task=task, date=date, lat=lat, 
-                                            lon=lon, method=method, num_trials=num_trials)        
+                                            lon=lon, method=method, 
+                                            num_trials=num_trials, 
+                                            avg_aggregate=avg_aggregate)        
             metrics['categories'] = metrics['categories'] + [metrics_list[0]]
             metrics['time_chunks'] = metrics['time_chunks'] + [metrics_list[1]]
             metrics['lon_chunks'] = metrics['lon_chunks'] + [metrics_list[2]]
@@ -215,7 +226,8 @@ def worker_fxn(i, strategies, dataset, variable, metrics,
             continue
 
 def run(all_strategies, savename, dataset, variable, 
-        task='time', date=None, lat=None, lon=None, method=None, num_trials=3):
+        task='time', date=None, lat=None, lon=None, 
+        method=None, num_trials=3, avg_aggregate=False):
     manager = mp.Manager()
     metrics = manager.dict()
     metrics['categories'] = []
@@ -240,7 +252,7 @@ def run(all_strategies, savename, dataset, variable,
     for worker_i, strategies in enumerate(batched_strategies):
         proc = mp.Process(target=worker_fxn, args=(worker_i, strategies,
                                    dataset, variable, metrics, task, date, 
-                                   lat, lon, method, num_trials))
+                                   lat, lon, method, num_trials, avg_aggregate))
         proc.start()
         processes.append(proc)
 
@@ -249,8 +261,7 @@ def run(all_strategies, savename, dataset, variable,
 
     print('Saving data.')
     metrics_df = pd.DataFrame(dict(metrics))
-    # metrics_df.to_csv(f'efs/dieumynguyen/performance-metrics-data/imerg-fwi/{savename}_metrics.csv')
-    metrics_df.to_csv(f'{savename}_metrics.csv')
+    metrics_df.to_csv(f'data/geos-global-fp/{savename}_metrics.csv')
 
 def main():
     #------ Set up paths ------#
@@ -261,63 +272,90 @@ def main():
     bucket = 'eis-dh-fire'
     dataset = dataset_dict[1]
     folder = f'dieumynguyen_rechunked/{dataset}/'
-
-    # Choose a task
-    # 0: time series, 1: time series over region, 2: map over time, 3: map over 1 timestep
-    TASK = 0
-    num_trials = 10
     
-    # Choose a variable
+    #------ Choose a variable ------#
     variable = 'IMERG.FINAL.v6_FWI' if dataset=='imerg-fwi' else 'BCEXTTAU' 
 
     client = boto3.client('s3')
     result = client.list_objects(Bucket=bucket, Prefix=folder, Delimiter='/')
 
+    #------ Find all data folders in bucket ------#
     all_strategies = []
     for prefix in result.get('CommonPrefixes'):
         folder_path = prefix.get('Prefix')
-
         if dataset == 'imerg-fwi':
             folder_path = os.path.join(bucket, folder_path)
         else:
             folder_path = os.path.join(bucket, folder_path, 'inst.zarr/')
-
         all_strategies.append(folder_path)
     
     #### DEBUG ####
     # all_strategies = all_strategies[:3]
-    # print(all_strategies)
     #### DEBUG ####
 
     print(f'Num of strategies: {len(all_strategies)}')
 
+    #------ Choose a task ------#
+    # 0: time series, 1: time series over region, 2: map over time, 3: map over 1 timestep
+    TASK = 2
+    num_trials = 10
+    print(f'Num trials: {num_trials}')
+
     #------ Run task ------#
     if TASK == 0:
-        print(f'Drawing time series.')
+        print(f'Drawing time series at single coordinate.')
         lat = 47.61
         lon = -122.19
         method = 'nearest'
         run(all_strategies, 'time_series', dataset, variable, 
-            task='time', date=None, lat=lat, lon=lon, method=method, num_trials=num_trials)
+            task='time', date=None, lat=lat, lon=lon, method=method, 
+            num_trials=num_trials, avg_aggregate=False)
+
     elif TASK == 1:
-        print(f'Drawing time series over region.')
-        bbox = [-124.74, 32.31, -114.52, 42.44] # Sort of California
+        # BBox CSV format from: https://boundingbox.klokantech.com/
+        bbox_dict = {
+            'ohio':          [-84.91,38.21,-80.5,42.25],
+            'california':    [-124.92,32.64,-114.25,42.11],
+            'usa':           [-124.9,24.9,-66.7,49.4],
+            'north_america': [-168.0,15.3,-53.0,71.3]
+        }
+        bbox_type = 'north_america'
+        print(f'Drawing time series over region: {bbox_type}.')
+        bbox = bbox_dict[bbox_type] 
         lon_slice = slice(bbox[0], bbox[2])
         lat_slice = slice(bbox[1], bbox[3])
-        run(all_strategies, 'time_series_over_region', dataset, variable, 
-            task='time', date=None, lat=lat_slice, lon=lon_slice, method=None, num_trials=num_trials)
+        run(all_strategies, f'time_series_over_region_{bbox_type}', 
+            dataset, variable, task='time', date=None, 
+            lat=lat_slice, lon=lon_slice, method=None, 
+            num_trials=num_trials, avg_aggregate=True)
+
     elif TASK == 2:
-        print(f'Drawing map over time.')
-        date_start = '2020-06-01'
-        date_end = '2020-06-01' 
+        time_dict = {
+            '6_hr':    ('2020-06-01T00', '2020-06-01T05'),
+            '12_hr':   ('2020-06-01T00', '2020-06-01T11'),
+            '1_day':   ('2020-06-01', '2020-06-01'),
+            '2_day':   ('2020-06-01', '2020-06-02'),
+            '7_day':   ('2020-06-01', '2020-06-07'),
+            '30_day':  ('2020-06-01', '2020-06-30'),
+            '60_day':  ('2020-06-01', '2020-07-30'),
+            '180_day': ('2020-06-01', '2020-11-27'),
+        }
+        time_type = '30_day'
+        print(f'Drawing map over time: {time_type}.')
+        time_range = time_dict[time_type]
+        date_start = time_range[0]
+        date_end = time_range[1]
         time_bounds = slice(date_start, date_end)
-        run(all_strategies, 'map_over_time', dataset, variable, 
-            task='map', date=time_bounds, lat=None, lon=None, method=None, num_trials=num_trials)
+        run(all_strategies, f'map_over_time_{time_type}', dataset, variable, 
+            task='map', date=time_bounds, lat=None, lon=None, method=None, 
+            num_trials=num_trials, avg_aggregate=True)
+    
     elif TASK == 3:
         print(f'Drawing map at one timestep.')
         date = '2020-06-01'
         run(all_strategies, 'map_one_timestep', dataset, variable, 
-            task='map_one_timestep', date=date, lat=None, lon=None, method=None, num_trials=num_trials)
+            task='map_one_timestep', date=date, lat=None, lon=None, method=None, 
+            num_trials=num_trials, avg_aggregate=False)
 
 if __name__ == '__main__':
     main()
