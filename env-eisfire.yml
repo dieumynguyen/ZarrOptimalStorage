@@ -1,0 +1,25 @@
+name: eisfire
+channels:
+        - conda-forge
+        - defaults
+dependencies:
+        - cftime
+        - dask
+        - dask-jobqueue
+        - gdal
+        - geopandas
+        - ipython
+        - matplotlib
+        - mamba
+        - pandas
+        - psycopg2
+        - pyhdf
+        - python
+        - rasterio
+        - rechunker
+        - rioxarray
+        - s3fs
+        - tqdm
+        - xarray
+        - zarr
+        - seaborn

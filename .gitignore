@@ -1,6 +1,3 @@
 *.err
-*.out
-*.csv
-
-/data
-/etc
+*.png
+__pycache__
