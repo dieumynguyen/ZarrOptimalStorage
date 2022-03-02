@@ -1,7 +1,7 @@
 # Optimal Strategies for Storing Earth Science Datasets in the Commercial Cloud
 
 ## Overview:
-This repo provides the code for the study on the optimal chunking strategies of multi-dimension data in Zarr format for storage in the cloud (AWS S3). Code is provided for rechunking a default Zarr archive, measuring the performance (mainly CPU time and memory usage) of different chunking strategies, and performance data visualization. 
+This repo provides the code for the study on the optimal chunking strategies of multi-dimensional data in Zarr format for storage in the cloud (AWS S3). Code is provided for rechunking a default Zarr archive, measuring the performance (mainly time and memory consumption) of different chunking strategies, and performance data visualization. This study was conducted as part of the Fall 2021/Spring 2022 internship at NASA Goddard Space Flight Center.
 
 ## Requirements:
 The complete list of required packages is provided in *env-eisfire.yml*, which you can install in your environment via [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) with the command `conda env create -f env-eisfire.yml`. Note that this code is set up on a cluster on AWS that uses [slurm](https://slurm.schedmd.com/documentation.html). 
