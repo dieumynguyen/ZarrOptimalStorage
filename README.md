@@ -33,7 +33,7 @@ Job info and progress as well as any errors are stored in the `.out` and `.err` 
 ##### Input:
 The performance data generated in #2. 
 ##### Usage:
-Run `sbatch visualize.sh` to submit a job to run `visualize.py`.
+Nagivate to directory `visualization/`. Run `sbatch visualize.sh` to submit a job to run `visualize.py`.
 ##### Output:
 Heatmaps and scatterplots shown in paper, stored in `data/geos-fp-global_inst/heatmaps`, `data/geos-fp-global_inst/normalized_heatmaps`, and `data/geos-fp-global_inst/scatterplots`.
 
