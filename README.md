@@ -9,7 +9,7 @@ The complete list of required packages is provided in *env-eisfire.yml*, which y
 ## Usage:
 ### 1. Rechunk dataset
 ##### Input:
-In this study, we use the [GEOS-FP](https://gmao.gsfc.nasa.gov/pubs/docs/Lucchesi1203.pdf) dataset in Zarr format stored in the AWS S3 bucket `eis-dh-fire/geos-fp-global/`; speficially, the *inst.zarr* store and *BCEXTTAU* variable. The default chunking scheme: 5136 chunks in the `time` dimension, 1 chunk in `longitude`, and 1 chunk in `latitude`.
+In this study, we use the [GEOS-FP](https://gmao.gsfc.nasa.gov/pubs/docs/Lucchesi1203.pdf) dataset in Zarr format stored in the AWS S3 bucket `eis-dh-fire/geos-fp-global/`; specifically, the *inst.zarr* store and *BCEXTTAU* variable. The default chunking scheme: 5136 chunks in the `time` dimension, 1 chunk in `longitude`, and 1 chunk in `latitude`.
 ##### Usage:
 To rechunk the dataset into a different scheme (e.g., 5136 chunks in time, 100 in longitude, and 100 in latitude), navigate to the directory `rechunk/` and modify the `main()` function in the script *run_rechunk.py* for the variables `time`, `lat`, and `lon` to take on desired values (single value or a list of values for each variable - the script will create unique combinations of the variables). Run the rechunking script with the command: `python run_rechunk.py` to automatically launch a cluster job for each combination of variable values. 
 ##### Output:
