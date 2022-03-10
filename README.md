@@ -39,4 +39,6 @@ Heatmaps and scatterplots shown in paper, stored in `data/geos-fp-global_inst/he
 
 Reference: Nguyen DMT, Cortes JC, Dunn MM, Shiklomanov AN (2022). Optimal Strategies for Storing Earth Science Datasets in the Commercial Cloud. 
 
+[![DOI](https://zenodo.org/badge/465210880.svg)](https://zenodo.org/badge/latestdoi/465210880)
+
 ----------------------------
