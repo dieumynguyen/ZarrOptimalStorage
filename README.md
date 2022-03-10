@@ -22,7 +22,7 @@ After rechunking the dataset to various chunking schemes and storing the differe
 Navigate to directory `measure_performance/`.
 - To obtain archive size data, run `sbatch measure_archive_size.sh` to submit a cluster job, which runs *measure_archive_size.py*.
 - To obtain rechunking time, run `sbatch measure_rechunking_time.sh` to submit a cluster job, which runs *measure_rechunking_time.py*.
-- To obtain CPU time and peak memory usage for a given data operation, modify the selected operation in the `main()` function in *measure_performance.py*. Then, run `sbatch measure_performance.sh` to submit a cluster job, which runs *measure_performance.py).
+- To obtain CPU time and peak memory usage for a given data operation, modify the selected operation in the `main()` function in *measure_performance.py*. Then, run `sbatch measure_performance.sh` to submit a cluster job, which runs *measure_performance.py*).
 ##### Output:
 Job info and progress as well as any errors are stored in the `.out` and `.err` files in the sub-directory `performance-logs-slurm/`. 
 - Archive size data is saved in `data/geos-fp-global_inst/archive_sizes.csv`.
