@@ -1,6 +1,7 @@
 import numpy as np
 import seaborn as sns
 from scipy.stats import linregress
+sns.set(style='ticks', palette='Set2')
 
 def plot_pairwise_metrics(ax, metrics_df, x_var, y_var, 
                         color_palette, titles,
@@ -22,7 +23,7 @@ def plot_pairwise_metrics(ax, metrics_df, x_var, y_var,
             logx = np.log(x)
             logy = np.log(y)
             m, c, r, p, se = linregress(logx, logy)
-            # print(f'Group: {group} - Slope: {m} - p-value: {p}')
+            print(f'Group: {group} - Slope: {m} - p-value: {p}')
             y_fit = np.exp(m*logx + c) # calculate the fitted values of y 
             x_min_idx = np.argmin(x)
             x_max_idx = np.argmax(x)
@@ -36,7 +37,7 @@ def plot_pairwise_metrics(ax, metrics_df, x_var, y_var,
         logx = np.log(x)
         logy = np.log(y)
         m, c, r, p, se = linregress(logx, logy)
-        # print(f'Group: Both - Slope: {m} - p-value: {p} \n')
+        print(f'Group: Both - Slope: {m} - p-value: {p} \n')
         y_fit = np.exp(m*logx + c) # Calculate the fitted values of y 
         x_min_idx = np.argmin(x)
         x_max_idx = np.argmax(x)

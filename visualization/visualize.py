@@ -56,7 +56,7 @@ def make_heatmap(
         QUANTILE_Q=0.65,
         NUM_DECIMALS=3,
         MB_TO_GB=True,
-        SHOW_TITLE=True,
+        SHOW_TITLE=False,
         PROCESS_CSV=True,
         PRODUCT=False
     ):
@@ -79,7 +79,7 @@ def make_heatmap(
         product=PRODUCT
         )
 
-    sns.set(font_scale=1.5)
+    sns.set(font_scale=2) # 1.5
     heatmap_maker.make_heatmap(
         dataset,
         titles_dict,
@@ -90,7 +90,7 @@ def make_heatmap(
         vmin=VMIN, 
         vmax=VMAX,
         quantile_q=QUANTILE_Q,
-        fontsize=10,
+        fontsize=12, # 10
         num_decimals=NUM_DECIMALS,
         convert_mb_to_gb=MB_TO_GB,
         show_title=SHOW_TITLE
@@ -118,14 +118,14 @@ def main():
 
     # Lookup dictionaries
     titles_dict = {
-        "chunk_sizes": "Chunk size [B]",
+        "chunk_sizes": "Chunk size (B)",
         "num_chunks": "Number of chunks",
-        "peak_memories": "Peak memory [GB]",
-        "cpu_times": "CPU time [Sec]",
-        "norm_cpu_times": "Processing speed [Num data points per sec]",
-        "norm_peak_memories": "Peak memory per data point [MiB]",
-        "runtime_hr": "Rechunking time [Hr]",
-        "archive_size": "Archive size [GB]"
+        "peak_memories": "Peak memory (GB)", # GB for heatmaps, MiB for normalized
+        "wall_times": "Wall time (Sec)",
+        "norm_wall_times": "Data points per sec",
+        "norm_peak_memories": "Memory per data point (MiB)",
+        "runtime_hr": "Rechunking time (Hr)",
+        "archive_size": "Archive size (GB)"
     }
 
     convert_all_dict = {
@@ -138,18 +138,18 @@ def main():
         1: f'map_one_timestep_metrics_ntrials{ntrials}'
     }       
 
-    keys = ['norm_cpu_times', 'norm_peak_memories', 'cpu_times', 'peak_memories']
+    keys = ['norm_wall_times', 'norm_peak_memories', 'wall_times', 'peak_memories']
 
     pairwise_combinations = [
-        ('chunk_sizes', 'cpu_times'),
+        ('chunk_sizes', 'wall_times'),
         ('chunk_sizes', 'peak_memories'),
-        ('peak_memories', 'cpu_times'),
+        ('peak_memories', 'wall_times'),
     ]
 
     norm_pairwise_combinations = [
-        ('chunk_sizes', 'norm_cpu_times'),
+        ('chunk_sizes', 'norm_wall_times'),
         ('chunk_sizes', 'norm_peak_memories'),
-        ('norm_peak_memories', 'norm_cpu_times'),
+        ('norm_peak_memories', 'norm_wall_times'),
     ]
 
     # Plot time series data
@@ -338,6 +338,7 @@ def main():
         lim2 = [(10**1.5, 10**7.8), (10**-4, 10**0.2), (10**1.4, 10**8)]
         YLIM = lim2 if NORM else lim1
 
+        sns.set(style='ticks', palette='Set2')
         fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(9,3), constrained_layout=True, dpi=150)
         for ax_i, (ax, pair) in enumerate(zip(axes.flatten(), pairs)):
             scatterplot_maker.plot_pairwise_metrics(ax, concatenated, pair[0], pair[1], 
