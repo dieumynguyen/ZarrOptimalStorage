@@ -41,7 +41,10 @@ def read_process_csv(filepath, timeall, lonall, latall, sort_by='lonlat'):
         # 1. Normalized cpu time
         metrics_df['norm_cpu_times'] = metrics_df.num_data_points / metrics_df.cpu_times
 
-        # 2. Normalized peak memory
+        # 2. Normalized wall time
+        metrics_df['norm_wall_times'] = metrics_df.num_data_points / metrics_df.wall_times
+
+        # 3. Normalized peak memory
         metrics_df['norm_peak_memories'] =  metrics_df.peak_memories / metrics_df.num_data_points
     except:
         pass

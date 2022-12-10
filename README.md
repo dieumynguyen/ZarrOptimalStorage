@@ -1,7 +1,7 @@
-# Optimal Strategies for Storing Earth Science Datasets in the Commercial Cloud
+# Impact of Chunk Size on Read Performance of Zarr Data in Cloud-based Object Stores
 
 ## Overview:
-This repo provides the code for the study on the optimal chunking strategies of multi-dimensional data in Zarr format for storage in the cloud (AWS S3). Code is provided for rechunking a default Zarr archive, measuring the performance (mainly time and memory consumption) of different chunking strategies, and performance data visualization. This study was conducted as part of the Fall 2021/Spring 2022 internship at NASA Goddard Space Flight Center.
+This repo provides the code for the study on the impact of chunk size on read performance of multi-dimensional data in Zarr format stored in the cloud (AWS S3). Code is provided for rechunking a default Zarr archive, measuring the performance (mainly time and memory consumption) of different chunking strategies, and performance data visualization. This study was conducted as part of the Fall 2021/Spring 2022 internship at NASA Goddard Space Flight Center.
 
 ## Requirements:
 The complete list of required packages is provided in *env-eisfire.yml*, which you can install in your environment via [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) with the command `conda env create -f env-eisfire.yml`. Note that this code is set up on a cluster on AWS that uses [slurm](https://slurm.schedmd.com/documentation.html). 
@@ -17,12 +17,12 @@ Job info and progress as well as any errors are stored in the `.out` and `.err` 
 
 ### 2. Measure performance
 ##### Input & Info: 
-After rechunking the dataset to various chunking schemes and storing the different versions of the dataset on S3, we track how the schemes perform for common data access and analysis operations (e.g., extracting a time series at a location or extracting a map or spatial slice at a datetime). Performance metrics include CPU time, peak memory usage, the rechunking time, and Zarr store archive size. 
+After rechunking the dataset to various chunking schemes and storing the different versions of the dataset on S3, we track how the schemes perform for common data access and analysis operations (e.g., extracting a time series at a location or extracting a map or spatial slice at a datetime). Performance metrics include wall clock time, peak memory usage, the rechunking time, and Zarr store archive size. 
 ##### Usage:
 Navigate to directory `measure_performance/`.
 - To obtain archive size data, run `sbatch measure_archive_size.sh` to submit a cluster job, which runs *measure_archive_size.py*.
 - To obtain rechunking time, run `sbatch measure_rechunking_time.sh` to submit a cluster job, which runs *measure_rechunking_time.py*.
-- To obtain CPU time and peak memory usage for a given data operation, modify the selected operation in the `main()` function in *measure_performance.py*. Then, run `sbatch measure_performance.sh` to submit a cluster job, which runs *measure_performance.py*).
+- To obtain wall time and peak memory usage for a given data operation, modify the selected operation in the `main()` function in *measure_performance.py*. Then, run `sbatch measure_performance.sh` to submit a cluster job, which runs *measure_performance.py*).
 ##### Output:
 Job info and progress as well as any errors are stored in the `.out` and `.err` files in the sub-directory `performance-logs-slurm/`. 
 - Archive size data is saved in `data/geos-fp-global_inst/archive_sizes.csv`.
@@ -37,6 +37,6 @@ Navigate to directory `visualization/`. Run `sbatch visualize.sh` to submit a jo
 ##### Output:
 Heatmaps and scatterplots shown in paper, stored in `data/geos-fp-global_inst/heatmaps`, `data/geos-fp-global_inst/normalized_heatmaps`, and `data/geos-fp-global_inst/scatterplots`.
 
-Reference: Nguyen DMT, Cortes JC, Dunn MM, Shiklomanov AN (2022). Optimal Strategies for Storing Earth Science Datasets in the Commercial Cloud. 
+Reference: Nguyen DMT, Cortes JC, Dunn MM, Shiklomanov AN (2022). Impact of Chunk Size on Read Performance of Zarr Data in Cloud-based Object Stores. 
 
 [![DOI](https://zenodo.org/badge/465210880.svg)](https://zenodo.org/badge/latestdoi/465210880)
