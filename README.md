@@ -39,4 +39,4 @@ Heatmaps and scatterplots shown in paper, stored in `data/geos-fp-global_inst/he
 
 Reference: Nguyen DMT, Cortes JC, Dunn MM, Shiklomanov AN (2022). Impact of Chunk Size on Read Performance of Zarr Data in Cloud-based Object Stores. 
 
-[![DOI](https://zenodo.org/badge/465210880.svg)](https://zenodo.org/badge/latestdoi/465210880)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7422933.svg)](https://doi.org/10.5281/zenodo.7422933)
